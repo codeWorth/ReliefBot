@@ -5,23 +5,23 @@ import tarehart.rlbot.math.Clamper
 class AgentOutput : rlbot.ControllerState {
 
     // 0 is straight, -1 is hard left, 1 is hard right.
-    var steer: Double = 0.0
+    var steer_: Double = 0.0
         private set
 
     // -1 for front flip, 1 for back flip
-    var pitch: Double = 0.0
+    var pitch_: Double = 0.0
         private set
 
     // -1 to yaw left, 1 to yaw right
-    var yaw: Double = 0.0
+    var yaw_: Double = 0.0
         private set
 
     // -1 to roll left, 1 to roll right
-    var roll: Double = 0.0
+    var roll_: Double = 0.0
         private set
 
     // -1 is reverse, 0 is idle, 1 is full
-    var throttle: Double = 0.0
+    var throttle_: Double = 0.0
         private set
 
     var jumpDepressed: Boolean = false
@@ -37,27 +37,27 @@ class AgentOutput : rlbot.ControllerState {
         private set
 
     fun withSteer(steeringTilt: Number): AgentOutput {
-        this.steer = Clamper.clamp(steeringTilt, -1, 1).toDouble()
+        this.steer_ = Clamper.clamp(steeringTilt, -1, 1).toDouble()
         return this
     }
 
     fun withPitch(pitchTilt: Number): AgentOutput {
-        this.pitch = Clamper.clamp(pitchTilt, -1, 1).toDouble()
+        this.pitch_ = Clamper.clamp(pitchTilt, -1, 1).toDouble()
         return this
     }
 
     fun withYaw(yawTilt: Number): AgentOutput {
-        this.yaw = Clamper.clamp(yawTilt, -1, 1).toDouble()
+        this.yaw_ = Clamper.clamp(yawTilt, -1, 1).toDouble()
         return this
     }
 
     fun withRoll(rollTilt: Number): AgentOutput {
-        this.roll = Clamper.clamp(rollTilt, -1, 1).toDouble()
+        this.roll_ = Clamper.clamp(rollTilt, -1, 1).toDouble()
         return this
     }
 
     fun withThrottle(throttle: Number): AgentOutput {
-        this.throttle = Clamper.clamp(throttle, -1, 1).toDouble()
+        this.throttle_ = Clamper.clamp(throttle, -1, 1).toDouble()
         return this
     }
 
@@ -132,23 +132,23 @@ class AgentOutput : rlbot.ControllerState {
     }
 
     override fun getYaw(): Float {
-        return yaw.toFloat()
+        return yaw_.toFloat()
     }
 
     override fun getSteer(): Float {
-        return steer.toFloat()
+        return steer_.toFloat()
     }
 
     override fun getThrottle(): Float {
-        return throttle.toFloat()
+        return throttle_.toFloat()
     }
 
     override fun getPitch(): Float {
-        return pitch.toFloat()
+        return pitch_.toFloat()
     }
 
     override fun getRoll(): Float {
-        return roll.toFloat()
+        return roll_.toFloat()
     }
 
     override fun holdHandbrake(): Boolean {

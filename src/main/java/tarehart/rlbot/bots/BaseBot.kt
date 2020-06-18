@@ -13,6 +13,7 @@ import tarehart.rlbot.planning.GoalUtil
 import tarehart.rlbot.planning.Plan
 import tarehart.rlbot.planning.Posture
 import tarehart.rlbot.planning.ZonePlan
+import tarehart.rlbot.recording.TrainingDataFrameWriter
 import tarehart.rlbot.steps.WaitForActive
 import tarehart.rlbot.tactics.GameMode
 import tarehart.rlbot.tactics.GameModeSniffer
@@ -38,6 +39,7 @@ abstract class BaseBot(private val team: Team, protected val playerIndex: Int) :
     private val chronometer = Chronometer()
     private var frameCount: Long = 0
     private var previousTime = Instant.now()
+    private var lastGameTime: Float = -1f;
     private val planRenderer = NamedRenderer("baseBotPlanRenderer$playerIndex")
     private var isGameModeInitialized = false
 
@@ -105,6 +107,13 @@ abstract class BaseBot(private val team: Team, protected val playerIndex: Int) :
             if (BotHouse.disableDriving) {
                 return AgentOutput()
             }
+
+            if (lastGameTime >= 0) {
+                val dt: Float = request.gameInfo().secondsElapsed() - lastGameTime;
+                TrainingDataFrameWriter.write(request, output, playerIndex, dt);
+            }
+            lastGameTime = request.gameInfo().secondsElapsed();
+
             return output
         } catch (e: Exception) {
             e.printStackTrace()
@@ -132,9 +141,9 @@ abstract class BaseBot(private val team: Team, protected val playerIndex: Int) :
     }
 
     override fun retire() {
+        TrainingDataFrameWriter.close();
         selfDestruct = true
     }
-
 
     fun processInput(input: AgentInput): AgentOutput {
         BotLog.setTimeStamp(input.time)
