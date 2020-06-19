@@ -13,7 +13,7 @@ import tarehart.rlbot.planning.GoalUtil
 import tarehart.rlbot.planning.Plan
 import tarehart.rlbot.planning.Posture
 import tarehart.rlbot.planning.ZonePlan
-import tarehart.rlbot.recording.TrainingDataFrameWriter
+import tarehart.rlbot.recording.TrainingDataWriter
 import tarehart.rlbot.steps.WaitForActive
 import tarehart.rlbot.tactics.GameMode
 import tarehart.rlbot.tactics.GameModeSniffer
@@ -42,6 +42,7 @@ abstract class BaseBot(private val team: Team, protected val playerIndex: Int) :
     private var lastGameTime: Float = -1f;
     private val planRenderer = NamedRenderer("baseBotPlanRenderer$playerIndex")
     private var isGameModeInitialized = false
+    private var frameWriter: TrainingDataWriter? = null
 
     private var selfDestruct = false
     var debugMode: Boolean = false
@@ -76,6 +77,13 @@ abstract class BaseBot(private val team: Team, protected val playerIndex: Int) :
         val timeBefore = Instant.now()
 
         request ?: return AgentOutput()
+        frameWriter = frameWriter ?: TrainingDataWriter(playerIndex, request.playersLength());
+
+        var dt: Float = -1f;
+        if (lastGameTime >= 0) {
+            dt = request.gameInfo().secondsElapsed() - lastGameTime;
+        }
+        lastGameTime = request.gameInfo().secondsElapsed();
 
         try {
             // Do nothing if we know nothing about our car
@@ -95,6 +103,10 @@ abstract class BaseBot(private val team: Team, protected val playerIndex: Int) :
             val translatedInput = AgentInput(request, playerIndex, chronometer, frameCount++, this)
             val output = processInput(translatedInput)
 
+            if (dt >= 0 && !BotHouse.disableDriving) {
+                frameWriter?.write(request, output, playerIndex, dt);
+            }
+
             val elapsedMillis = java.time.Duration.between(timeBefore, Instant.now()).toMillis()
             if (elapsedMillis > 10) {
                 BotLog.println("SLOW FRAME took $elapsedMillis ms!", playerIndex)
@@ -107,12 +119,6 @@ abstract class BaseBot(private val team: Team, protected val playerIndex: Int) :
             if (BotHouse.disableDriving) {
                 return AgentOutput()
             }
-
-            if (lastGameTime >= 0) {
-                val dt: Float = request.gameInfo().secondsElapsed() - lastGameTime;
-                TrainingDataFrameWriter.write(request, output, playerIndex, dt);
-            }
-            lastGameTime = request.gameInfo().secondsElapsed();
 
             return output
         } catch (e: Exception) {
@@ -141,7 +147,7 @@ abstract class BaseBot(private val team: Team, protected val playerIndex: Int) :
     }
 
     override fun retire() {
-        TrainingDataFrameWriter.close();
+        frameWriter?.close();
         selfDestruct = true
     }
 

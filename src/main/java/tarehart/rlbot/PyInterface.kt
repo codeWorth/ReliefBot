@@ -6,6 +6,7 @@ import rlbot.Bot
 import rlbot.manager.BotManager
 import rlbot.pyinterop.SocketServer
 import tarehart.rlbot.bots.*
+import tarehart.rlbot.tuning.BotLog
 
 /**
  * The public methods of this class will be called directly from the python component of the RLBot framework.
